@@ -1,7 +1,6 @@
 package reconocimiento_tokens;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 
 public class Simulador {
     private String cadena_original;
@@ -182,11 +181,15 @@ public class Simulador {
                 break;
         }
         for(int i=0; i<palaras_reservadas.length; i++) {
-            if(palaras_reservadas[0].equals(palabra)) {
+            if(palaras_reservadas[i].equals(palabra)) {
                 num_consecutivo = 501+i;
                 token = "Palabra reservada";
                 lexema = palabra;
                 tabla += num_consecutivo+"    "+token+"      "+lexema+"    "+num_linea+"\n";
+                return true;
+            } else if(i == palaras_reservadas.length-1 && this.esLetra()) {
+                lexema = palabra;
+                agregarError();
                 return true;
             }
         }
@@ -328,6 +331,27 @@ public class Simulador {
         }
     }
 
+    public void guardarTablas() {
+        String path1 = "/root/Escritorio/Automatas/tabla.txt";
+        String path2 = "/root/Escritorio/Automatas/tabla_errores.txt";
+        File file1 = new File(path1);
+        File file2 = new File(path2);
+        BufferedWriter bw, bw2;
+        try {
+            bw = new BufferedWriter(new FileWriter(file1));
+            bw.write(this.tabla);
+            bw.close();
+
+            bw2 = new BufferedWriter(new FileWriter(file2));
+            bw2.flush();
+            bw2.write(this.tabla_errores);
+            //bw.write(this.tabla_errores + "\n");
+            bw2.close();
+        } catch(Exception e) {
+
+        }
+    }
+
     public void agregarError() {
         if(lexema != null) {
             if(num_consecutivo_error == 0) {
@@ -372,7 +396,7 @@ public class Simulador {
             } else if(esCaracter_especial()) {
             } else if(esComentario()) {
             } else if(esNumero()) {
-            } else if(caracter_actual == 10) {
+            } else if(caracter_actual == 10 || caracter_actual == 0) {
             } else {
                 lexema = caracter_actual+"";
                 agregarError();
@@ -402,6 +426,7 @@ public class Simulador {
     public void imprimirTabla() {
         System.out.println(tabla);
         System.out.println(tabla_errores);
+        guardarTablas();
     }
 
     public static void main(String[] args) {
