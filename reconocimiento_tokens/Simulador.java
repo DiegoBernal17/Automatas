@@ -315,7 +315,7 @@ public class Simulador {
     }
 
     public void leerArchivo() {
-        String file = "/root/Escritorio/Automatas/archivoLeer.txt";
+        String file = "/home/bernal/Escritorio/Automatas/archivoLeer.txt";
         String text;
         FileReader f;
         try {
@@ -332,8 +332,8 @@ public class Simulador {
     }
 
     public void guardarTablas() {
-        String path1 = "/root/Escritorio/Automatas/tabla.txt";
-        String path2 = "/root/Escritorio/Automatas/tabla_errores.txt";
+        String path1 = "/home/bernal/Escritorio/Automatas/tabla.txt";
+        String path2 = "/home/bernal/Escritorio/Automatas/tabla_errores.txt";
         File file1 = new File(path1);
         File file2 = new File(path2);
         BufferedWriter bw, bw2;

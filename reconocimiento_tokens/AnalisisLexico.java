@@ -1,8 +1,8 @@
 package reconocimiento_tokens;
 
-import java.io.*;
+import manejoarchivos.Archivos;
 
-public class Simulador {
+public class AnalisisLexico {
     private String cadena_original;
     private String cadena_auxiliar;
     private char caracter_actual;
@@ -296,72 +296,22 @@ public class Simulador {
      * científica ni exponencial, siempre debe manejar una parte entera y una parte decimal
      */
     public boolean esNumeroReal(String numero) {
-        if(caracter_actual == '.') {
+        if (caracter_actual == '.') {
             numero += ".";
             avanzar();
             while (continua()) {
-                if(!Character.isDigit(caracter_actual))
+                if (!Character.isDigit(caracter_actual))
                     break;
                 numero += caracter_actual;
                 avanzar();
             }
-            num_consecutivo = 900+(++real_num);
+            num_consecutivo = 900 + (++real_num);
             token = "Numero real";
             lexema = numero;
-            tabla += num_consecutivo+"    "+token+"            "+lexema+"    "+num_linea+"\n";
+            tabla += num_consecutivo + "    " + token + "            " + lexema + "    " + num_linea + "\n";
             return true;
         }
         return false;
-    }
-
-    public void leerArchivo() {
-        String file = "/root/Escritorio/Automatas/archivoLeer.txt";
-        String text;
-        FileReader f;
-        try {
-            f = new FileReader(file);
-            BufferedReader b = new BufferedReader(f);
-            while((text = b.readLine())!=null) {
-                cadena_original += text+"\n";
-            }
-
-            b.close();
-        } catch (Exception e) {
-            System.out.println("Error");
-        }
-    }
-
-    public void guardarTablas() {
-        String path1 = "/root/Escritorio/Automatas/tabla.txt";
-        String path2 = "/root/Escritorio/Automatas/tabla_errores.txt";
-        File file1 = new File(path1);
-        File file2 = new File(path2);
-        BufferedWriter bw, bw2;
-        try {
-            bw = new BufferedWriter(new FileWriter(file1));
-            bw.write(this.tabla);
-            bw.close();
-
-            bw2 = new BufferedWriter(new FileWriter(file2));
-            bw2.flush();
-            bw2.write(this.tabla_errores);
-            //bw.write(this.tabla_errores + "\n");
-            bw2.close();
-        } catch(Exception e) {
-
-        }
-    }
-
-    public void agregarError() {
-        if(lexema != null) {
-            if(num_consecutivo_error == 0) {
-                tabla_errores += "-------------- TABLA DE ERRORES -------------- \n" +
-                                 "No   Error   No.Linea\n";
-            }
-            num_consecutivo_error++;
-            tabla_errores += num_consecutivo_error + "    " + lexema + "    " + num_linea + "\n";
-            error = false;
-        }
     }
 
     public void avanzar() {
@@ -405,9 +355,20 @@ public class Simulador {
         }
     }
 
-    public void iniciar() {
+    public void agregarError() {
+        if(lexema != null) {
+            if(num_consecutivo_error == 0) {
+                tabla_errores += "-------------- TABLA DE ERRORES -------------- \n" +
+                        "No   Error   No.Linea\n";
+            }
+            num_consecutivo_error++;
+            tabla_errores += num_consecutivo_error + "    " + lexema + "    " + num_linea + "\n";
+            error = false;
+        }
+    }
+
+    public AnalisisLexico() {
         cadena_original = "";
-        leerArchivo();
         tabla = "";
         tabla_errores = "";
         id_num = 0;
@@ -421,19 +382,5 @@ public class Simulador {
             this.buscarCategoria();
         else
             System.out.println("El archivo se encuentra vacio");
-    }
-
-    public void imprimirTabla() {
-        System.out.println(tabla);
-        System.out.println(tabla_errores);
-        guardarTablas();
-    }
-
-    public static void main(String[] args) {
-        //      No. Consecutivo        Token        Lexema        No. Línea      //
-        //      No. Consecutivo        Error        No. Línea      //
-        Simulador sim = new Simulador();
-        sim.iniciar();
-        sim.imprimirTabla();
     }
 }

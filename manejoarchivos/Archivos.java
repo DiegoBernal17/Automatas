@@ -1,8 +1,8 @@
-package archivos;
+package manejoarchivos;
 
 import java.io.*;
 
-public class manejo_archivos {
+public class Archivos {
 
     public static String leerArchivo(String nombreArchivo) {
         String file = "/home/bernal/Escritorio/Automatas/"+nombreArchivo+".txt";
@@ -17,7 +17,7 @@ public class manejo_archivos {
 
             b.close();
         } catch (Exception e) {
-            System.out.println("Error al leer un archivo");
+            System.out.println("Error al leer archivo, quizá no exista.");
         }
         return cadena;
     }
