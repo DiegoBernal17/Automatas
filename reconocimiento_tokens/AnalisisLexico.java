@@ -8,23 +8,20 @@ public class AnalisisLexico {
     private char caracter_actual;
     private char caracter_siguiente;
     private int num_consecutivo;
-    private int num_consecutivo_error;
-    private String token;
+    private String tipo;
     private String lexema;
     private int num_linea;
-    private String tabla;
-    private String tabla_errores;
     private int id_num, entero_num, real_num;
-    private boolean error;
+    private ContainerTokens tokens;
 
     private final String[] palaras_reservadas = {"cadena", "caracter", "decimal", "entero", "entonces", "entrada", "fin",
             "hacer", "hasta", "inicio", "mientras", "programa", "repetir", "salida", "si", "sino", "variables"};
 
-    public boolean esLetra() {
+    private boolean esLetra() {
         return Character.isLetter(caracter_actual);
     }
 
-    public boolean esNumeroEntero() {
+    private boolean esNumeroEntero() {
         return Character.isDigit(caracter_actual);
     }
 
@@ -32,24 +29,24 @@ public class AnalisisLexico {
      * IDENTIFICADORES ( 100 )
      * Inicia con # y al menos dos letra y puede contener más letras o números, cualquier cantidad y en cualquier orden
      */
-    public boolean esIdentificador() {
+    private boolean esIdentificador() {
         if(caracter_actual == '#') {
             String ide_name = "";
             num_consecutivo = 100+(++id_num);
-            token = "Identificador";
+            tipo = "Identificador";
             int numeroDeLetras=0;
             avanzar();
             while(this.esLetra() || this.esNumeroEntero()) {
                 ide_name += caracter_actual;
                 numeroDeLetras++;
                 if(Character.isLetter(caracter_siguiente) || Character.isDigit(caracter_siguiente))
-                this.avanzar();
+                    this.avanzar();
                 else
                     break;
             }
             lexema = "#"+ide_name;
             if (numeroDeLetras >= 2) {
-                tabla += num_consecutivo+"    "+token+"          "+lexema+"    "+num_linea+"\n";
+                tokens.push(num_consecutivo, tipo, lexema, num_linea);
                 return true;
             }
             agregarError();
@@ -62,30 +59,30 @@ public class AnalisisLexico {
      * OPERADORES ARITMETICOS ( 200 )
      * - ( Resta ) + ( Suma ) * (multiplicación) / ( división )
      */
-    public boolean esOperadorAritmetico() {
+    private boolean esOperadorAritmetico() {
         if(caracter_actual == '+') {
             num_consecutivo = 201;
-            token = "Operador Aritmético";
+            tipo = "Operador Aritmético";
             lexema = "+";
-            tabla += num_consecutivo + "    " + token + "    " + lexema + "      " + num_linea + "\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == '-') {
             num_consecutivo = 202;
-            token = "Operador Aritmético";
+            tipo = "Operador Aritmético";
             lexema = "-";
-            tabla += num_consecutivo + "    " + token + "    " + lexema + "      " + num_linea + "\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == '*') {
             num_consecutivo = 203;
-            token = "Operador Aritmético";
+            tipo = "Operador Aritmético";
             lexema = "*";
-            tabla += num_consecutivo + "    " + token + "    " + lexema + "      " + num_linea + "\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == '/' && caracter_siguiente != '*') {
             num_consecutivo = 204;
-            token = "Operador Aritmético";
+            tipo = "Operador Aritmético";
             lexema = "/";
-            tabla += num_consecutivo + "    " + token + "    " + lexema + "      " + num_linea + "\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
@@ -95,44 +92,44 @@ public class AnalisisLexico {
      * OPERADORES RELACIONALES ( 300 )
      * < (menor que) > ( mayor que ) <= (menor igual) >= (mayor igual) == (comparación)
      */
-    public boolean esOperadorRelacional() {
-        if (caracter_actual == '<' && caracter_siguiente != '=') {
-            num_consecutivo = 301;
-            token = "Operador Relacional";
-            lexema = "<";
-            this.avanzar();
-            tabla += num_consecutivo+"    "+token+"    "+lexema+"    "+num_linea+"\n";
-            return true;
-        } else if(caracter_actual == '>' && caracter_siguiente != '=') {
-            num_consecutivo = 302;
-            token = "Operador Relacional";
-            lexema = ">";
-            this.avanzar();
-            tabla += num_consecutivo+"    "+token+"    "+lexema+"    "+num_linea+"\n";
-            return true;
-        } else if(caracter_actual == '<' && caracter_siguiente == '=') {
+    private boolean esOperadorRelacional() {
+         if(caracter_actual == '<' && caracter_siguiente == '=') {
             num_consecutivo = 303;
-            token = "Operador Relacional";
+            tipo = "Operador Relacional";
             lexema = "<=";
             this.avanzar();
             this.avanzar();
-            tabla += num_consecutivo+"    "+token+"    "+lexema+"   "+num_linea+"\n";
-            return true;
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
+        return true;
         } else if(caracter_actual == '>' && caracter_siguiente == '=') {
-            num_consecutivo = 304;
-            token = "Operador Relacional";
-            lexema = ">=";
+             num_consecutivo = 304;
+             tipo = "Operador Relacional";
+             lexema = ">=";
+             this.avanzar();
+             this.avanzar();
+             tokens.push(num_consecutivo, tipo, lexema, num_linea);
+             return true;
+         } else if (caracter_actual == '<') {
+            num_consecutivo = 301;
+            tipo = "Operador Relacional";
+            lexema = "<";
             this.avanzar();
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
+            return true;
+        } else if(caracter_actual == '>') {
+            num_consecutivo = 302;
+            tipo = "Operador Relacional";
+            lexema = ">";
             this.avanzar();
-            tabla += num_consecutivo+"    "+token+"    "+lexema+"   "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == '=' && caracter_siguiente == '=') {
             num_consecutivo = 305;
-            token = "Operador Relacional";
+            tipo = "Operador Relacional";
             lexema = "==";
             this.avanzar();
             this.avanzar();
-            tabla += num_consecutivo+"    "+token+"    "+lexema+"   "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
@@ -142,26 +139,26 @@ public class AnalisisLexico {
      * OPERADORES LOGICOS ( 400 )
      * && ( AND ) || ( OR ) ! ( NOT )
      */
-    public boolean esOperadorLogico() {
+    private boolean esOperadorLogico() {
         if(caracter_actual == '&' && caracter_siguiente == '&') {
             num_consecutivo = 401;
-            token = "Operador Logico";
+            tipo = "Operador Logico";
             lexema = "&&";
             this.avanzar();
-            tabla += num_consecutivo+"    "+token+"        "+lexema+"     "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == '|' && caracter_siguiente == '|') {
             num_consecutivo = 402;
-            token = "Operador Logico";
+            tipo = "Operador Logico";
             lexema = "||";
             this.avanzar();
-            tabla += num_consecutivo+"    "+token+"        "+lexema+"     "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == '!') {
             num_consecutivo = 403;
-            token = "Operador Logico";
+            tipo = "Operador Logico";
             lexema = "!";
-            tabla += num_consecutivo+"    "+token+"        "+lexema+"      "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
@@ -171,7 +168,7 @@ public class AnalisisLexico {
      * PALABRAS RESERVADAS ( 500 )
      * Programa, inicio, fin, entrada, salida, entero, decimal, caracter, cadena, si, sino, entonces, mientras, hacer, repetir, hasta, variables
      */
-    public boolean esPalabraReservada() {
+    private boolean esPalabraReservada() {
         String palabra = "";
         while(this.esLetra()) {
             palabra += caracter_actual;
@@ -183,9 +180,9 @@ public class AnalisisLexico {
         for(int i=0; i<palaras_reservadas.length; i++) {
             if(palaras_reservadas[i].equals(palabra)) {
                 num_consecutivo = 501+i;
-                token = "Palabra reservada";
+                tipo = "Palabra reservada";
                 lexema = palabra;
-                tabla += num_consecutivo+"    "+token+"      "+lexema+"    "+num_linea+"\n";
+                tokens.push(num_consecutivo, tipo, lexema, num_linea);
                 return true;
             } else if(i == palaras_reservadas.length-1 && this.esLetra()) {
                 lexema = palabra;
@@ -200,36 +197,36 @@ public class AnalisisLexico {
      * CARACTERES ESPECIALES ( 600 )
      * )  ;  ,  =
      */
-    public boolean esCaracter_especial() {
+    private boolean esCaracter_especial() {
         if(caracter_actual == '(') {
             num_consecutivo = 601;
-            token = "Caracter especial";
+            tipo = "Caracter especial";
             lexema = "(";
-            tabla += num_consecutivo+"    "+token+"      "+lexema+"      "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == ')') {
             num_consecutivo = 602;
-            token = "Caracter especial";
+            tipo = "Caracter especial";
             lexema = ")";
-            tabla += num_consecutivo+"    "+token+"      "+lexema+"    "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == ';') {
             num_consecutivo = 603;
-            token = "Caracter especial";
+            tipo = "Caracter especial";
             lexema = ";";
-            tabla += num_consecutivo+"    "+token+"      "+lexema+"    "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if(caracter_actual == ',') {
             num_consecutivo = 604;
-            token = "Caracter especial";
+            tipo = "Caracter especial";
             lexema = ",";
-            tabla += num_consecutivo+"    "+token+"      "+lexema+"    "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         } else if (caracter_actual == '=') {
             num_consecutivo = 605;
-            token = "Caracter especial";
+            tipo = "Caracter especial";
             lexema = "=";
-            tabla += num_consecutivo+"    "+token+"      "+lexema+"    "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
@@ -240,11 +237,11 @@ public class AnalisisLexico {
      * Inician y terminan con /(asterisco) (asterisco)/ y puede contener cualquier otro carácter o estar vacío separado
      * al menos de un espacio /(asterisco) hola (asterisco)/ , /(asterisco) (asterisco)/
      */
-    public boolean esComentario() {
+    private boolean esComentario() {
         if(caracter_actual == '/' && caracter_siguiente == '*') {
             String comentario = "";
             num_consecutivo = 701;
-            token = "Comentario";
+            tipo = "Comentario";
             this.avanzar();
             this.avanzar();
             while (continua()) {
@@ -256,7 +253,7 @@ public class AnalisisLexico {
                 avanzar();
             }
             lexema = "/*"+comentario+"*/";
-            tabla += num_consecutivo+"    "+token+"             "+lexema+"    "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
@@ -266,13 +263,13 @@ public class AnalisisLexico {
      * NUMEROS ENTEROS ( 800 )
      * Cualquier cantidad entera puede ser positiva o negativa
      */
-    public boolean esNumero() {
+    private boolean esNumero() {
         if(Character.isDigit(caracter_actual)) {
             String numero = "";
             while (Character.isDigit(caracter_actual)) {
                 numero += caracter_actual;
                 if(Character.isDigit(caracter_siguiente))
-                avanzar();
+                    avanzar();
                 else
                     break;
             }
@@ -282,9 +279,9 @@ public class AnalisisLexico {
                 return esNumeroReal(numero);
             }
             num_consecutivo = 800+(++entero_num);
-            token = "Numero entero      ";
+            tipo = "Numero entero";
             lexema = numero;
-            tabla += num_consecutivo+"    "+token+"    "+lexema+"    "+num_linea+"\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
@@ -295,48 +292,48 @@ public class AnalisisLexico {
      * Cualquier cantidad con punto decimal puede ser positivo o negativo, no maneja notación
      * científica ni exponencial, siempre debe manejar una parte entera y una parte decimal
      */
-    public boolean esNumeroReal(String numero) {
-        if (caracter_actual == '.') {
+    private boolean esNumeroReal(String numero) {
+        if(caracter_actual == '.') {
             numero += ".";
             avanzar();
             while (continua()) {
-                if (!Character.isDigit(caracter_actual))
+                if(!Character.isDigit(caracter_actual))
                     break;
                 numero += caracter_actual;
                 avanzar();
             }
-            num_consecutivo = 900 + (++real_num);
-            token = "Numero real";
+            num_consecutivo = 900+(++real_num);
+            tipo = "Numero real";
             lexema = numero;
-            tabla += num_consecutivo + "    " + token + "            " + lexema + "    " + num_linea + "\n";
+            tokens.push(num_consecutivo, tipo, lexema, num_linea);
             return true;
         }
         return false;
     }
 
-    public void avanzar() {
+    private void agregarError() {
+        if(lexema != null)
+            tokens.pushError(lexema, num_linea);
+    }
+
+    private void avanzar() {
         if(continua()) {
             caracter_actual = cadena_auxiliar.charAt(0);
             if (cadena_auxiliar.length() > 1)
                 caracter_siguiente = cadena_auxiliar.charAt(1);
+            else
+                caracter_siguiente = ' ';
             cadena_auxiliar = cadena_auxiliar.substring(1, cadena_auxiliar.length());
         }
-        verLinea();
-    }
-
-    public boolean continua() {
-        if(cadena_auxiliar.length() > 0)
-            return true;
-        return false;
-    }
-
-    public void verLinea() {
-        if(caracter_actual == 10) {
+        if(caracter_actual == 10)
             num_linea++;
-        }
     }
 
-    public void buscarCategoria() {
+    private boolean continua() {
+        return cadena_auxiliar.length() > 0;
+    }
+
+    private void buscarCategoria() {
         while(continua()) {
             if(esIdentificador()) {
             } else if(esOperadorAritmetico()) {
@@ -346,41 +343,58 @@ public class AnalisisLexico {
             } else if(esCaracter_especial()) {
             } else if(esComentario()) {
             } else if(esNumero()) {
-            } else if(caracter_actual == 10 || caracter_actual == 0) {
+            } else if(caracter_actual <= 32) {
             } else {
                 lexema = caracter_actual+"";
                 agregarError();
             }
             avanzar();
         }
+        guardarTablas();
     }
 
-    public void agregarError() {
-        if(lexema != null) {
-            if(num_consecutivo_error == 0) {
-                tabla_errores += "-------------- TABLA DE ERRORES -------------- \n" +
-                        "No   Error   No.Linea\n";
-            }
-            num_consecutivo_error++;
-            tabla_errores += num_consecutivo_error + "    " + lexema + "    " + num_linea + "\n";
-            error = false;
-        }
-    }
-
-    public AnalisisLexico() {
-        cadena_original = "";
-        tabla = "";
-        tabla_errores = "";
-        id_num = 0;
-        entero_num = 0;
-        real_num = 0;
+    public AnalisisLexico(String archivoLeer) {
+        cadena_original = Archivos.leerArchivo(archivoLeer);
+        tokens = new ContainerTokens();
         num_linea=1;
-        num_consecutivo_error=0;
-        // Quitar los caracteres en blancos encontrados en la cadena original y guardar en cadena auxiliar
-        this.cadena_auxiliar = cadena_original.replace(" ", "");
-        if(this.continua())
-            this.buscarCategoria();
+        cadena_auxiliar = cadena_original;
+        if(continua())
+            buscarCategoria();
         else
             System.out.println("El archivo se encuentra vacio");
+    }
+
+    public AnalisisLexico(String cadena, boolean leerCadena) {
+        cadena_original = cadena;
+        cadena_auxiliar = cadena_original;
+        tokens = new ContainerTokens();
+        num_linea=1;
+        if(continua())
+            buscarCategoria();
+        else
+            System.out.println("La cadena está vacia.");
+    }
+
+    public void guardarTablas() {
+        Archivos.guardarArchivo("tabla", tokens.toStringTokens());
+        Archivos.guardarArchivo("tabla_errores", tokens.toStringErrores());
+    }
+
+    public void imprimirTablas() {
+        System.out.println(tokens.toStringTokens());
+        System.out.println(tokens.toStringErrores());
+    }
+
+    public ContainerTokens getTokens() {
+        return tokens;
+    }
+    public String getTipo() {
+        return tipo;
+    }
+    public String getLexema() {
+        return lexema;
+    }
+    public int getnumConsecutivo() {
+        return num_consecutivo;
     }
 }

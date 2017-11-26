@@ -18,15 +18,19 @@ public class DescensoRecursivo {
     public DescensoRecursivo() {
         Scanner sc = new Scanner(System.in);
         entrada = sc.next();
+        cadena = entrada;
         S();
     }
 
     public void S() {
+        avanzar();
         if (apuntador == 'c') {
             avanzar();
             int valor = A();
+            avanzar();
+            System.out.println("camino: "+ valor);
             if (valor != 2 && apuntador == 'd') {
-                System.out.println("Cadena valida.");
+                System.out.println(apuntador);
                 return;
             }
         }
@@ -54,7 +58,9 @@ public class DescensoRecursivo {
     }
 
     public void retroceder() {
-        apuntador = cadena_auxiliar.charAt(0);
-        cadena = cadena_auxiliar;
+        if(cadena.length() != entrada.length()) {
+            apuntador = cadena_auxiliar.charAt(0);
+            cadena = cadena_auxiliar;
+        }
     }
 }
